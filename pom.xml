@@ -70,6 +70,7 @@
                     <mainClass>com.example.Main</mainClass>
                     <options>
                         <option>--module-path</option>
+                        <!-- Замінити наступний рядок на ваш шлях до JavaFX -->
                         <option>D:\Games\javafx-sdk-23.0.2\lib</option>
                         <option>--add-modules</option>
                         <option>javafx.controls,javafx.fxml,javafx.graphics,javafx.base</option>
