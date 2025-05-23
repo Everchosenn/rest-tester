@@ -1,0 +1,18 @@
+1.Розпакувати архів в будь яку папку
+
+2.Завантажити Java JDK версії 23.0.2 або вище
+ • Java SDK: https://www.oracle.com/java/technologies/javase/jdk23-archive-downloads.html
+
+3.Завантажити Maven версії 3.9.6 або вище
+ • Apache Maven: https://maven.apache.org/download.cgi
+
+4.Завантажити JavaFX SDK версії 23.0.2 або вище та розпакувати в будь яку папку
+ • JavaFX: https://gluonhq.com/products/javafx/
+
+5.Відкрити файл pom.xml в папці з програмою
+ • Змініть шлях <option>D:\Games\javafx-sdk-23.0.2\lib</option> на ваш шлях до JavaFX SDK /lib
+
+6. Запустіть програму
+ • У командному рядку виконайте: mvn clean javafx:run
+ АБО
+ • Запустити файл REST tester.bat в файлі з програмою 
