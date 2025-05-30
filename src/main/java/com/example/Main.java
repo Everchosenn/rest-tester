@@ -1116,7 +1116,8 @@ public class Main extends Application {
         String apiKey = apiKeyField.getText();
         int intervalMinutes = periodicIntervalSpinner.getValue();
         int durationMinutes = periodicDurationSpinner.getValue();
-        int expectedRunCount = durationMinutes / intervalMinutes;
+        int runCount = runCountSpinner.getValue(); // Кількість запитів за один цикл
+        int expectedRunCount = (durationMinutes / intervalMinutes) * runCount; // Загальна кількість запитів
         periodicRunCount = 0;
 
         long intervalMillis = intervalMinutes * 60 * 1000L;
@@ -1136,10 +1137,16 @@ public class Main extends Application {
             public void run() {
                 periodicRunCount++;
                 checkAndClearLogFile();
-                TestResult testResult = TestRunner.runTest(testCase, apiKey);
-                Platform.runLater(() -> {
+                StringBuilder cycleResults = new StringBuilder();
+                // Виконання кількох запитів за один цикл
+                for (int i = 0; i < runCount; i++) {
+                    TestResult testResult = TestRunner.runTest(testCase, apiKey);
+                    cycleResults.append(String.format("Запуск %d (цикл %d):\n%s\n\n", i + 1, periodicRunCount, testResult.result()));
                     addToHistory(testCase, testResult, expectedRunCount);
-                    resultArea.appendText(String.format("Періодичний запуск %d (на %d хвилині):\n%s\n\n", periodicRunCount, periodicRunCount * intervalMinutes, testResult.result()));
+                }
+                // Оновлення результатів у GUI
+                Platform.runLater(() -> {
+                    resultArea.appendText(String.format("Періодичний цикл %d (на %d хвилині):\n%s\n", periodicRunCount, periodicRunCount * intervalMinutes, cycleResults.toString()));
                 });
             }
         };
@@ -1157,7 +1164,7 @@ public class Main extends Application {
             }
         }, durationMillis);
 
-        resultArea.setText("Періодичне виконання розпочато: кожні " + intervalMinutes + " хвилин протягом " + durationMinutes + " хвилин. Очікувана кількість запусків: " + expectedRunCount + ". Перший запуск через " + intervalMinutes + " хвилин.\n");
+        resultArea.setText("Періодичне виконання розпочато: кожні " + intervalMinutes + " хвилин протягом " + durationMinutes + " хвилин. Кількість запитів за цикл: " + runCount + ". Очікувана загальна кількість запитів: " + expectedRunCount + ". Перший запуск через " + intervalMinutes + " хвилин.\n");
     }
 
     // Зупинка періодичних тестів
@@ -1185,6 +1192,7 @@ public class Main extends Application {
 
         String apiKey = apiKeyField.getText();
         String startTimeStr = scheduleStartTimeField.getText();
+        int runCount = runCountSpinner.getValue(); // Кількість запитів за один цикл
         LocalTime startTime;
 
         // Перевірка введення часу
@@ -1238,10 +1246,16 @@ public class Main extends Application {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                TestResult testResult = TestRunner.runTest(testCase, apiKey);
+                StringBuilder cycleResults = new StringBuilder();
+                // Виконання кількох запитів за один цикл
+                for (int i = 0; i < runCount; i++) {
+                    TestResult testResult = TestRunner.runTest(testCase, apiKey);
+                    cycleResults.append(String.format("Запуск %d:\n%s\n\n", i + 1, testResult.result()));
+                    addToHistory(testCase, testResult, runCount);
+                }
+                // Оновлення результатів у GUI
                 Platform.runLater(() -> {
-                    addToHistory(testCase, testResult, 1);
-                    resultArea.appendText(String.format("Запланований запуск:\n%s\n\n", testResult.result()));
+                    resultArea.appendText(String.format("Запланований запуск:\n%s\n", cycleResults.toString()));
                 });
                 scheduleTimer.cancel();
                 scheduleTimer = null;
@@ -1250,7 +1264,7 @@ public class Main extends Application {
 
         // Запуск завдання у визначений час
         scheduleTimer.schedule(task, delay);
-        resultArea.setText("Заплановане виконання заплановано на " + startTime.format(DateTimeFormatter.ofPattern("HH:mm")) + ".");
+        resultArea.setText("Заплановане виконання заплановано на " + startTime.format(DateTimeFormatter.ofPattern("HH:mm")) + ". Кількість запитів: " + runCount + ".");
     }
 
     // Збереження тест-кейсу у файл
